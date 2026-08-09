@@ -21,3 +21,4 @@ assistant/*.db
 assistant/thumbnails/
 assistant/certs/
 assistant/snapshots/
+~$*.pptx
