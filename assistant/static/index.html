@@ -101,6 +101,26 @@
     display: none;
   }
   canvas { display: none; }
+
+  /* Phone landscape: the 5-button column doesn't fit the short edge —
+     lay buttons in a row along the bottom-right and shrink them. */
+  @media (orientation: landscape) and (max-height: 520px) {
+    #buttons {
+      top: auto; transform: none; flex-direction: row;
+      right: calc(1rem + env(safe-area-inset-right));
+      bottom: calc(.8rem + env(safe-area-inset-bottom));
+      gap: .6rem;
+    }
+    .round-btn { width: 58px; height: 58px; font-size: 1.35rem; border-width: 2px; }
+    .round-btn span { font-size: .5rem; }
+    #chat { max-width: 46vw; max-height: 72vh; }
+    #ask-bar {
+      left: calc(1rem + env(safe-area-inset-left)); transform: none;
+      bottom: calc(.9rem + env(safe-area-inset-bottom));
+      width: min(48vw, 480px);
+    }
+    #status { bottom: auto; top: calc(.6rem + env(safe-area-inset-top)); }
+  }
 </style>
 </head>
 <body>
