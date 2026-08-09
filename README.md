@@ -1,4 +1,19 @@
+# 🕊️ Project Jericho
 
+**An AI cognitive & sensory companion for seniors**, built on the REMIND re-identification tracker below. A phone camera + a home PC become a voice assistant that remembers where things are, guards medicine intake, and reads small print aloud.
+
+➡️ **[Jericho app documentation — features, setup, and architecture](assistant/README.md)**
+
+| | |
+|---|---|
+| 📸 / 💬 | Identify items & medicines by camera, spoken aloud |
+| 🎤 | Voice conversation (local Whisper STT + GLM + Fish Audio TTS) |
+| 👁 | Live room memory: REMIND tracks objects, ask "where is my…?" |
+| 📖 | Reads letters, bills, and labels aloud for weak eyesight |
+
+The tracker powering the room memory is documented below.
+
+---
 
 # REMIND — RE-Identification with Memory for INDoor Navigation
 
@@ -189,6 +204,3 @@ Config("config/default_config.yaml", "my_override.yaml")
 Detector backends: `"davis"` (ground-truth masks from DAVIS / ScanNet++) or `"yolo"` (YOLO instance segmentation).
 
 ---
-
-#   P r o j e c t J e r i c h o  
- 
