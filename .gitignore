@@ -19,3 +19,5 @@ d4sm
 assistant/.env
 assistant/*.db
 assistant/thumbnails/
+assistant/certs/
+assistant/snapshots/

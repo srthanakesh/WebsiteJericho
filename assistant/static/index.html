@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Room Memory Assistant</title>
+<title>Jericho</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
@@ -56,7 +56,9 @@
   .round-btn:disabled { opacity: .45; cursor: wait; }
   .round-btn span { font-size: .62rem; font-weight: 700; letter-spacing: .05em; }
   #snap { background: rgba(255,255,255,.2); }
-  #ask, #talk { flex-direction: column; gap: 2px; }
+  #ask, #talk, #read { flex-direction: column; gap: 2px; }
+  #monitor { flex-direction: column; gap: 2px; }
+  #monitor.on { background: rgba(80,200,120,.55); border-color: #50c878; animation: pulse 2.5s infinite; }
   #talk.recording { background: rgba(255,60,60,.65); border-color: #ff5c5c; animation: pulse 1s infinite; }
   @keyframes pulse { 50% { transform: scale(1.07); } }
 
@@ -95,6 +97,8 @@
   <button id="snap" class="round-btn" title="Snap & identify">📸</button>
   <button id="ask" class="round-btn" title="Ask a question"><div>💬</div><span>ASK</span></button>
   <button id="talk" class="round-btn" title="Hold to talk"><div>🎤</div><span>HOLD</span></button>
+  <button id="monitor" class="round-btn" title="Watch the room and remember where things are"><div>👁</div><span>WATCH</span></button>
+  <button id="read" class="round-btn" title="Read this out loud"><div>📖</div><span>READ</span></button>
 </div>
 
 <div id="ask-bar">
@@ -137,7 +141,9 @@ function addMsg(text, who, matches) {
       img.src = m.thumbnail;
       img.alt = m.class_name;
       const cap = document.createElement('figcaption');
-      cap.textContent = `${m.class_name} · ${m.zone || '?'} · fr ${m.last_frame}`;
+      cap.textContent = m.location
+        ? `${m.class_name} · ${m.location}${m.seen_at ? ' · ' + m.seen_at : ''}`
+        : `${m.class_name} · ${m.zone || '?'} · fr ${m.last_frame}`;
       fig.appendChild(img); fig.appendChild(cap);
       row.appendChild(fig);
     }
@@ -158,10 +164,10 @@ async function initCamera() {
   }
 }
 
-async function captureAndSend(question) {
+async function captureAndSend(question, mode) {
   if (!video.videoWidth) { setStatus('Camera not ready yet.'); return; }
   snapBtn.disabled = askBtn.disabled = true;
-  setStatus('Thinking…');
+  setStatus(mode === 'read' ? 'Reading…' : 'Thinking…');
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -171,6 +177,7 @@ async function captureAndSend(question) {
   const form = new FormData();
   form.append('image', blob, 'snap.jpg');
   form.append('question', question || '');
+  form.append('mode', mode || '');
 
   try {
     const resp = await fetch('/api/point-ask', { method: 'POST', body: form });
@@ -192,6 +199,7 @@ async function captureAndSend(question) {
 }
 
 snapBtn.addEventListener('click', () => captureAndSend(''));
+document.getElementById('read').addEventListener('click', () => captureAndSend('', 'read'));
 
 askBtn.addEventListener('click', () => {
   askBar.classList.toggle('open');
@@ -266,6 +274,41 @@ async function sendVoice() {
     talkBtn.disabled = snapBtn.disabled = askBtn.disabled = false;
   }
 }
+
+// --- Live monitor mode ---
+const monitorBtn = document.getElementById('monitor');
+let monitorTimer = null;
+
+async function sendMonitorFrame() {
+  if (!video.videoWidth) return;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85));
+  const form = new FormData();
+  form.append('image', blob, 'frame.jpg');
+  try {
+    const resp = await fetch('/api/monitor-frame', { method: 'POST', body: form });
+    const data = await resp.json();
+    if (!data.skipped && data.objects) {
+      setStatus(`👁 watching — remembering ${data.objects.length} item(s)`);
+    }
+  } catch (e) { /* keep monitoring quietly */ }
+}
+
+monitorBtn.addEventListener('click', () => {
+  if (monitorTimer) {
+    clearInterval(monitorTimer);
+    monitorTimer = null;
+    monitorBtn.classList.remove('on');
+    setStatus('');
+  } else {
+    monitorBtn.classList.add('on');
+    setStatus('👁 watching the room…');
+    sendMonitorFrame();
+    monitorTimer = setInterval(sendMonitorFrame, 8000);
+  }
+});
 
 talkBtn.addEventListener('mousedown', startRecording);
 talkBtn.addEventListener('mouseup', stopRecording);
