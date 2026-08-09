@@ -51,4 +51,71 @@ async def point_ask(image: UploadFile = File(...), question: str = Form("")):
     return {"text": text, "audio_b64": audio_b64, "tts_error": tts_error}
 
 
+CONVERSE_SYSTEM = (
+    "You are a friendly medicine specialist voice assistant. The user talks to you "
+    "through a camera app; their spoken words are transcribed for you, and a snapshot "
+    "from their camera may accompany each question.\n"
+    "Answer in plain spoken-style language (2-4 sentences, no markdown): general "
+    "information about medicines - what they are used for, how they are typically "
+    "taken, common everyday precautions.\n"
+    "Safety rules: identify medicine only from packaging/label text, never guess loose "
+    "pills; general information only, never personal dosing advice; for anything "
+    "personal, tell the user to check with a doctor or pharmacist."
+)
+
+# Single-user rolling conversation history (text-only turns are kept).
+_history: list[dict] = []
+_MAX_TURNS = 12
+
+
+@app.post("/api/converse")
+async def converse(audio: UploadFile = File(...), image: UploadFile | None = File(None)):
+    """Voice turn: audio -> Whisper STT -> GLM chat (with camera frame) -> Fish TTS."""
+    from assistant import stt  # deferred: first call loads the Whisper model
+
+    audio_bytes = await audio.read()
+    try:
+        question = stt.transcribe(audio_bytes)
+    except Exception as e:
+        return JSONResponse({"error": f"Transcription failed: {e}"}, status_code=502)
+    if not question:
+        return JSONResponse({"error": "I didn't catch that - please try again."}, status_code=422)
+
+    # Build this turn's user message, attaching the camera frame when provided.
+    if image is not None:
+        image_bytes = await image.read()
+        image_b64 = base64.b64encode(image_bytes).decode("ascii")
+        user_content = [
+            {"type": "text", "text": question},
+            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
+        ]
+    else:
+        user_content = question
+
+    messages = (
+        [{"role": "system", "content": CONVERSE_SYSTEM}]
+        + _history[-_MAX_TURNS * 2 :]
+        + [{"role": "user", "content": user_content}]
+    )
+    try:
+        reply = await glm_client.chat(messages, model=glm_client.GLM_VISION_MODEL)
+    except Exception as e:
+        return JSONResponse({"error": f"GLM chat failed: {e}", "question": question}, status_code=502)
+    text = (reply.get("content") or "").strip()
+
+    # Keep history text-only so payloads stay small.
+    _history.append({"role": "user", "content": question})
+    _history.append({"role": "assistant", "content": text})
+
+    audio_b64 = None
+    tts_error = None
+    try:
+        speech = await fish_tts.synthesize(text)
+        audio_b64 = base64.b64encode(speech).decode("ascii")
+    except Exception as e:
+        tts_error = f"Fish Audio TTS failed: {e}"
+
+    return {"question": question, "text": text, "audio_b64": audio_b64, "tts_error": tts_error}
+
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

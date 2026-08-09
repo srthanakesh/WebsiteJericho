@@ -10,15 +10,20 @@ GLM_VISION_MODEL = os.getenv("GLM_VISION_MODEL", "glm-4v-plus")
 GLM_CHAT_MODEL = os.getenv("GLM_CHAT_MODEL", "glm-4-plus")
 
 POINT_ASK_PROMPT = (
-    "You are a helpful assistant looking at a photo the user just took of an item "
-    "they are holding up to the camera. Identify the item and give a short spoken-style "
-    "description (2-4 sentences).\n"
-    "If it is a medicine or supplement: read the name and details from the packaging or "
-    "label text only, and give a one-sentence plain-language note on what it is commonly "
-    "used for. Never guess the identity of loose pills without packaging - instead say "
-    "you cannot safely identify unpackaged medicine. Phrase identifications as 'this "
-    "looks like...' and remind the user to confirm on the label or with a pharmacist "
-    "before taking anything.\n"
+    "You are a friendly medicine specialist assistant looking through the user's camera "
+    "at an item they are holding up, usually a medicine, supplement, or health product.\n"
+    "Your job: identify it from the packaging or label text and explain in plain, "
+    "spoken-style language (2-4 sentences) the general things the person needs to know: "
+    "what it is commonly used for, how it is typically taken, and any common everyday "
+    "precautions (e.g. take with food, may cause drowsiness) that appear on or are widely "
+    "known for this product.\n"
+    "Safety rules: only read identity from packaging/label text - never guess the identity "
+    "of loose pills without packaging; say you cannot safely identify unpackaged medicine. "
+    "Phrase identifications as 'this looks like...'. Give general information only, never "
+    "personal dosing advice, and remind the user to confirm with the label, a doctor, or a "
+    "pharmacist for anything specific to them.\n"
+    "If the item is not medicine-related, still identify and describe it briefly and "
+    "helpfully.\n"
     "Reply with plain text only, no markdown, suitable for reading aloud."
 )
 
@@ -53,9 +58,9 @@ async def identify_image(image_bytes: bytes, mime: str = "image/jpeg", question:
     return data["choices"][0]["message"]["content"].strip()
 
 
-async def chat(messages: list[dict], tools: list[dict] | None = None) -> dict:
-    """Plain chat completion. Returns the assistant message dict (may contain tool_calls)."""
-    payload: dict = {"model": GLM_CHAT_MODEL, "messages": messages}
+async def chat(messages: list[dict], tools: list[dict] | None = None, model: str | None = None) -> dict:
+    """Chat completion. Returns the assistant message dict (may contain tool_calls)."""
+    payload: dict = {"model": model or GLM_CHAT_MODEL, "messages": messages}
     if tools:
         payload["tools"] = tools
     async with httpx.AsyncClient(timeout=60.0) as client:

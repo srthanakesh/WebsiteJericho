@@ -2,69 +2,146 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>Room Memory Assistant</title>
 <style>
-  :root { --bg:#101418; --panel:#1a2027; --text:#e8edf2; --accent:#4da3ff; --muted:#8b98a5; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text);
-         display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:1rem; }
-  h1 { font-size:1.2rem; font-weight:600; margin:.5rem 0 1rem; }
-  #camera-wrap { position:relative; width:100%; max-width:640px; border-radius:12px; overflow:hidden; background:#000; }
-  video { width:100%; display:block; }
-  #controls { display:flex; gap:.75rem; margin:1rem 0; width:100%; max-width:640px; }
-  button { flex:1; padding:.9rem 1rem; font-size:1rem; border:none; border-radius:10px;
-           background:var(--accent); color:#fff; cursor:pointer; font-weight:600; }
-  button:disabled { background:var(--muted); cursor:wait; }
-  #question { width:100%; max-width:640px; padding:.7rem .9rem; font-size:1rem; border-radius:10px;
-              border:1px solid #2c3540; background:var(--panel); color:var(--text); }
-  #result { width:100%; max-width:640px; background:var(--panel); border-radius:12px;
-            padding:1rem; margin-top:1rem; white-space:pre-wrap; line-height:1.45; display:none; }
-  #status { color:var(--muted); margin-top:.75rem; min-height:1.2em; }
-  canvas { display:none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
+
+  /* Fullscreen camera */
+  #video {
+    position: fixed; inset: 0; width: 100vw; height: 100vh;
+    object-fit: cover; background: #000;
+  }
+
+  /* Top-left conversation overlay */
+  #chat {
+    position: fixed; top: 0; left: 0;
+    max-width: min(72vw, 480px); max-height: 55vh;
+    overflow-y: auto; padding: 1rem;
+    display: flex; flex-direction: column; gap: .5rem;
+    -webkit-mask-image: linear-gradient(to bottom, black 94%, transparent);
+            mask-image: linear-gradient(to bottom, black 94%, transparent);
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* old Edge/IE */
+  }
+  #chat::-webkit-scrollbar { display: none; }  /* Chrome/Safari */
+  .msg {
+    padding: .55rem .8rem; border-radius: 12px;
+    font-size: .95rem; line-height: 1.4;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+    width: fit-content; max-width: 100%;
+  }
+  .msg.ai   { color: #eaf4ff; border-left: 3px solid #4da3ff; }
+  .msg.user { color: #ffe9a8; border-left: 3px solid #ffc44d; }
+
+  /* Middle-right buttons */
+  #buttons {
+    position: fixed; right: 1rem; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 1rem; align-items: center;
+  }
+  .round-btn {
+    width: 72px; height: 72px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.85);
+    background: rgba(0,0,0,.35); backdrop-filter: blur(4px);
+    color: #fff; font-size: 1.7rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .1s, background .2s;
+  }
+  .round-btn:active { transform: scale(.92); }
+  .round-btn:disabled { opacity: .45; cursor: wait; }
+  .round-btn span { font-size: .62rem; font-weight: 700; letter-spacing: .05em; }
+  #snap { background: rgba(255,255,255,.2); }
+  #ask, #talk { flex-direction: column; gap: 2px; }
+  #talk.recording { background: rgba(255,60,60,.65); border-color: #ff5c5c; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.07); } }
+
+  /* Ask input bar */
+  #ask-bar {
+    position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+    width: min(92vw, 560px); display: none; gap: .5rem;
+  }
+  #ask-bar.open { display: flex; }
+  #ask-input {
+    flex: 1; padding: .8rem 1rem; font-size: 1rem;
+    border-radius: 999px; border: 1px solid rgba(255,255,255,.4);
+    background: rgba(0,0,0,.6); color: #fff; outline: none;
+    backdrop-filter: blur(6px);
+  }
+  #ask-send {
+    padding: .8rem 1.2rem; border-radius: 999px; border: none;
+    background: #4da3ff; color: #fff; font-weight: 700; cursor: pointer;
+  }
+
+  #status {
+    position: fixed; bottom: .5rem; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.75); font-size: .85rem;
+    background: rgba(0,0,0,.45); padding: .25rem .75rem; border-radius: 999px;
+    display: none;
+  }
+  canvas { display: none; }
 </style>
 </head>
 <body>
-<h1>📷 Room Memory Assistant — Point &amp; Ask</h1>
+<video id="video" autoplay playsinline muted></video>
 
-<div id="camera-wrap"><video id="video" autoplay playsinline muted></video></div>
+<div id="chat"></div>
 
-<input id="question" type="text" placeholder="Optional question (e.g. 'what is this medicine for?')">
+<div id="buttons">
+  <button id="snap" class="round-btn" title="Snap & identify">📸</button>
+  <button id="ask" class="round-btn" title="Ask a question"><div>💬</div><span>ASK</span></button>
+  <button id="talk" class="round-btn" title="Hold to talk"><div>🎤</div><span>HOLD</span></button>
+</div>
 
-<div id="controls">
-  <button id="snap">📸 Snap &amp; Ask</button>
+<div id="ask-bar">
+  <input id="ask-input" type="text" placeholder="Ask about this medicine…" autocomplete="off">
+  <button id="ask-send">Ask</button>
 </div>
 
 <div id="status"></div>
-<div id="result"></div>
 <canvas id="canvas"></canvas>
 <audio id="player"></audio>
 
 <script>
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
+const chat = document.getElementById('chat');
 const snapBtn = document.getElementById('snap');
+const askBtn = document.getElementById('ask');
+const askBar = document.getElementById('ask-bar');
+const askInput = document.getElementById('ask-input');
+const askSend = document.getElementById('ask-send');
 const statusEl = document.getElementById('status');
-const resultEl = document.getElementById('result');
 const player = document.getElementById('player');
-const questionEl = document.getElementById('question');
+
+function setStatus(t) {
+  statusEl.textContent = t;
+  statusEl.style.display = t ? 'block' : 'none';
+}
+
+function addMsg(text, who) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
 
 async function initCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false
+      video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false
     });
     video.srcObject = stream;
   } catch (e) {
-    statusEl.textContent = 'Camera access failed: ' + e.message;
+    setStatus('Camera access failed: ' + e.message);
   }
 }
 
-snapBtn.addEventListener('click', async () => {
-  if (!video.videoWidth) { statusEl.textContent = 'Camera not ready yet.'; return; }
-  snapBtn.disabled = true;
-  statusEl.textContent = 'Thinking…';
-  resultEl.style.display = 'none';
+async function captureAndSend(question) {
+  if (!video.videoWidth) { setStatus('Camera not ready yet.'); return; }
+  snapBtn.disabled = askBtn.disabled = true;
+  setStatus('Thinking…');
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -73,27 +150,108 @@ snapBtn.addEventListener('click', async () => {
 
   const form = new FormData();
   form.append('image', blob, 'snap.jpg');
-  form.append('question', questionEl.value);
+  form.append('question', question || '');
 
   try {
     const resp = await fetch('/api/point-ask', { method: 'POST', body: form });
     const data = await resp.json();
     if (data.error) throw new Error(data.error);
 
-    resultEl.textContent = data.text;
-    resultEl.style.display = 'block';
-    statusEl.textContent = data.tts_error ? ('Voice unavailable: ' + data.tts_error) : '';
+    addMsg(data.text, 'ai');
+    setStatus(data.tts_error ? 'Voice unavailable' : '');
 
     if (data.audio_b64) {
       player.src = 'data:audio/mpeg;base64,' + data.audio_b64;
       player.play();
     }
   } catch (e) {
-    statusEl.textContent = 'Error: ' + e.message;
+    setStatus('Error: ' + e.message);
   } finally {
-    snapBtn.disabled = false;
+    snapBtn.disabled = askBtn.disabled = false;
   }
+}
+
+snapBtn.addEventListener('click', () => captureAndSend(''));
+
+askBtn.addEventListener('click', () => {
+  askBar.classList.toggle('open');
+  if (askBar.classList.contains('open')) askInput.focus();
 });
+
+function submitAsk() {
+  const q = askInput.value.trim();
+  if (!q) return;
+  askInput.value = '';
+  askBar.classList.remove('open');
+  addMsg(q, 'user');
+  captureAndSend(q);
+}
+askSend.addEventListener('click', submitAsk);
+askInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitAsk(); });
+
+// --- Hold-to-talk voice loop ---
+const talkBtn = document.getElementById('talk');
+let recorder = null, chunks = [], micStream = null;
+
+async function startRecording() {
+  try {
+    if (!micStream) micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) { setStatus('Mic access failed: ' + e.message); return; }
+  chunks = [];
+  recorder = new MediaRecorder(micStream);
+  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  recorder.onstop = sendVoice;
+  recorder.start();
+  talkBtn.classList.add('recording');
+  setStatus('Listening… release to send');
+}
+
+function stopRecording() {
+  if (recorder && recorder.state === 'recording') recorder.stop();
+  talkBtn.classList.remove('recording');
+}
+
+async function sendVoice() {
+  const audioBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+  if (audioBlob.size < 1000) { setStatus(''); return; } // too short, ignore
+  setStatus('Thinking…');
+  talkBtn.disabled = snapBtn.disabled = askBtn.disabled = true;
+
+  const form = new FormData();
+  form.append('audio', audioBlob, 'voice.webm');
+  if (video.videoWidth) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const frame = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+    form.append('image', frame, 'frame.jpg');
+  }
+
+  try {
+    const resp = await fetch('/api/converse', { method: 'POST', body: form });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    if (data.question) addMsg(data.question, 'user');
+    addMsg(data.text, 'ai');
+    setStatus(data.tts_error ? 'Voice unavailable' : '');
+
+    if (data.audio_b64) {
+      player.src = 'data:audio/mpeg;base64,' + data.audio_b64;
+      player.play();
+    }
+  } catch (e) {
+    setStatus('Error: ' + e.message);
+  } finally {
+    talkBtn.disabled = snapBtn.disabled = askBtn.disabled = false;
+  }
+}
+
+talkBtn.addEventListener('mousedown', startRecording);
+talkBtn.addEventListener('mouseup', stopRecording);
+talkBtn.addEventListener('mouseleave', stopRecording);
+talkBtn.addEventListener('touchstart', e => { e.preventDefault(); startRecording(); });
+talkBtn.addEventListener('touchend', e => { e.preventDefault(); stopRecording(); });
 
 initCamera();
 </script>
