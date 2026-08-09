@@ -1,0 +1,18 @@
+{
+  "source": "C:\\Users\\Syed\\Documents\\RemindReidTrack\\remind-reid-tracker\\testData\\videos\\my_room\\video.mp4",
+  "scene": "my_room",
+  "output_dir": "C:\\Users\\Syed\\Documents\\RemindReidTrack\\remind-reid-tracker\\outputs\\video_runs\\my_room_20260808_182340",
+  "output_video": "C:\\Users\\Syed\\Documents\\RemindReidTrack\\remind-reid-tracker\\outputs\\video_runs\\my_room_20260808_182340\\tracking.mp4",
+  "frames_csv": "C:\\Users\\Syed\\Documents\\RemindReidTrack\\remind-reid-tracker\\outputs\\video_runs\\my_room_20260808_182340\\frames.csv",
+  "detections_jsonl": "C:\\Users\\Syed\\Documents\\RemindReidTrack\\remind-reid-tracker\\outputs\\video_runs\\my_room_20260808_182340\\detections.jsonl",
+  "processed_frames": 72,
+  "total_seconds": 73.2570521000307,
+  "avg_fps": 0.9828405311980855,
+  "yolo_model": "C:\\Users\\Syed\\Documents\\RemindReidTrack\\remind-reid-tracker\\yolo\\yolov8n-seg.pt",
+  "device": "cpu",
+  "native_input_fps": 29.912719785061263,
+  "input_video_sample_fps": 10.0,
+  "processed_fps": 10.0,
+  "stride": 1,
+  "output_fps": 15.0
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Room Memory Assistant</title>
+<style>
+  :root { --bg:#101418; --panel:#1a2027; --text:#e8edf2; --accent:#4da3ff; --muted:#8b98a5; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text);
+         display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:1rem; }
+  h1 { font-size:1.2rem; font-weight:600; margin:.5rem 0 1rem; }
+  #camera-wrap { position:relative; width:100%; max-width:640px; border-radius:12px; overflow:hidden; background:#000; }
+  video { width:100%; display:block; }
+  #controls { display:flex; gap:.75rem; margin:1rem 0; width:100%; max-width:640px; }
+  button { flex:1; padding:.9rem 1rem; font-size:1rem; border:none; border-radius:10px;
+           background:var(--accent); color:#fff; cursor:pointer; font-weight:600; }
+  button:disabled { background:var(--muted); cursor:wait; }
+  #question { width:100%; max-width:640px; padding:.7rem .9rem; font-size:1rem; border-radius:10px;
+              border:1px solid #2c3540; background:var(--panel); color:var(--text); }
+  #result { width:100%; max-width:640px; background:var(--panel); border-radius:12px;
+            padding:1rem; margin-top:1rem; white-space:pre-wrap; line-height:1.45; display:none; }
+  #status { color:var(--muted); margin-top:.75rem; min-height:1.2em; }
+  canvas { display:none; }
+</style>
+</head>
+<body>
+<h1>📷 Room Memory Assistant — Point &amp; Ask</h1>
+
+<div id="camera-wrap"><video id="video" autoplay playsinline muted></video></div>
+
+<input id="question" type="text" placeholder="Optional question (e.g. 'what is this medicine for?')">
+
+<div id="controls">
+  <button id="snap">📸 Snap &amp; Ask</button>
+</div>
+
+<div id="status"></div>
+<div id="result"></div>
+<canvas id="canvas"></canvas>
+<audio id="player"></audio>
+
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const snapBtn = document.getElementById('snap');
+const statusEl = document.getElementById('status');
+const resultEl = document.getElementById('result');
+const player = document.getElementById('player');
+const questionEl = document.getElementById('question');
+
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false
+    });
+    video.srcObject = stream;
+  } catch (e) {
+    statusEl.textContent = 'Camera access failed: ' + e.message;
+  }
+}
+
+snapBtn.addEventListener('click', async () => {
+  if (!video.videoWidth) { statusEl.textContent = 'Camera not ready yet.'; return; }
+  snapBtn.disabled = true;
+  statusEl.textContent = 'Thinking…';
+  resultEl.style.display = 'none';
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+
+  const form = new FormData();
+  form.append('image', blob, 'snap.jpg');
+  form.append('question', questionEl.value);
+
+  try {
+    const resp = await fetch('/api/point-ask', { method: 'POST', body: form });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    resultEl.textContent = data.text;
+    resultEl.style.display = 'block';
+    statusEl.textContent = data.tts_error ? ('Voice unavailable: ' + data.tts_error) : '';
+
+    if (data.audio_b64) {
+      player.src = 'data:audio/mpeg;base64,' + data.audio_b64;
+      player.play();
+    }
+  } catch (e) {
+    statusEl.textContent = 'Error: ' + e.message;
+  } finally {
+    snapBtn.disabled = false;
+  }
+});
+
+initCamera();
+</script>
+</body>
+</html>

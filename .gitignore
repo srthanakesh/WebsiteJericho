@@ -15,3 +15,7 @@ PERF_OPTIMIZATIONS.md
 d4sm
 
 *.pt
+# assistant app secrets and data
+assistant/.env
+assistant/*.db
+assistant/thumbnails/
