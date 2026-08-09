@@ -1,0 +1,5 @@
+# Zone labels per scene: map processed-frame ranges (inclusive) to room zones.
+# Edit these to match where the camera was looking during each walkthrough.
+my_room:
+  - frames: [0, 9999]
+    zone: "desk area"

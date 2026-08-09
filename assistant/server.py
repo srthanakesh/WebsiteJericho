@@ -7,6 +7,7 @@ Then open http://127.0.0.1:8000 in a browser.
 """
 
 import base64
+import json
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -52,16 +53,64 @@ async def point_ask(image: UploadFile = File(...), question: str = Form("")):
 
 
 CONVERSE_SYSTEM = (
-    "You are a friendly medicine specialist voice assistant. The user talks to you "
-    "through a camera app; their spoken words are transcribed for you, and a snapshot "
-    "from their camera may accompany each question.\n"
+    "You are a friendly medicine specialist and room-memory voice assistant. The user "
+    "talks to you through a camera app; their spoken words are transcribed for you, and "
+    "a snapshot from their camera may accompany each question.\n"
     "Answer in plain spoken-style language (2-4 sentences, no markdown): general "
     "information about medicines - what they are used for, how they are typically "
     "taken, common everyday precautions.\n"
     "Safety rules: identify medicine only from packaging/label text, never guess loose "
     "pills; general information only, never personal dosing advice; for anything "
-    "personal, tell the user to check with a doctor or pharmacist."
+    "personal, tell the user to check with a doctor or pharmacist.\n"
+    "Finding items: when the user asks where an item is (keys, bottle, book, medicine, "
+    "etc.), call the find_object tool with a short item name. Answer from its results: "
+    "say the zone it was last seen in, roughly when in the walkthrough (last seen frame "
+    "number), and if there are several matches mention how many and describe the most "
+    "recent. If nothing is found, say you have not seen it in the scanned room yet."
 )
+
+FIND_OBJECT_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "find_object",
+        "description": (
+            "Search the scanned room memory (built from a camera walkthrough) for an "
+            "item and return where it was last seen."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Short item name to search for, e.g. 'bottle', 'keys', 'laptop'",
+                }
+            },
+            "required": ["query"],
+        },
+    },
+}
+
+
+def _run_find_object(query: str) -> tuple[str, list[dict]]:
+    """Execute the tool; return (JSON for the model, match list for the UI)."""
+    from assistant import memory_db
+
+    rows = memory_db.find_object(query)
+    matches = [
+        {
+            "object_id": r["object_id"],
+            "class_name": r["class_name"],
+            "scene": r["scene"],
+            "zone": r["zone"],
+            "last_frame": r["last_frame"],
+            "last_ts": r["last_ts"],
+            "n_sightings": r["n_sightings"],
+            "thumbnail": f"/thumbnails/{Path(r['thumbnail']).name}" if r["thumbnail"] else None,
+        }
+        for r in rows
+    ]
+    model_view = [{k: m[k] for k in ("class_name", "zone", "last_frame", "last_ts", "n_sightings")} for m in matches]
+    return json.dumps({"matches": model_view}), matches
 
 # Single-user rolling conversation history (text-only turns are kept).
 _history: list[dict] = []
@@ -97,8 +146,20 @@ async def converse(audio: UploadFile = File(...), image: UploadFile | None = Fil
         + _history[-_MAX_TURNS * 2 :]
         + [{"role": "user", "content": user_content}]
     )
+    ui_matches: list[dict] = []
     try:
-        reply = await glm_client.chat(messages, model=glm_client.GLM_VISION_MODEL)
+        reply = await glm_client.chat(messages, tools=[FIND_OBJECT_TOOL], model=glm_client.GLM_VISION_MODEL)
+        for _ in range(3):  # resolve tool calls, at most a few rounds
+            tool_calls = reply.get("tool_calls")
+            if not tool_calls:
+                break
+            messages.append(reply)
+            for call in tool_calls:
+                args = json.loads(call["function"].get("arguments") or "{}")
+                result_json, matches = _run_find_object(args.get("query", ""))
+                ui_matches.extend(matches)
+                messages.append({"role": "tool", "content": result_json, "tool_call_id": call.get("id")})
+            reply = await glm_client.chat(messages, tools=[FIND_OBJECT_TOOL], model=glm_client.GLM_VISION_MODEL)
     except Exception as e:
         return JSONResponse({"error": f"GLM chat failed: {e}", "question": question}, status_code=502)
     text = (reply.get("content") or "").strip()
@@ -115,7 +176,16 @@ async def converse(audio: UploadFile = File(...), image: UploadFile | None = Fil
     except Exception as e:
         tts_error = f"Fish Audio TTS failed: {e}"
 
-    return {"question": question, "text": text, "audio_b64": audio_b64, "tts_error": tts_error}
+    return {
+        "question": question,
+        "text": text,
+        "audio_b64": audio_b64,
+        "tts_error": tts_error,
+        "matches": ui_matches or None,
+    }
 
 
+THUMB_DIR = Path(__file__).parent / "thumbnails"
+THUMB_DIR.mkdir(exist_ok=True)
+app.mount("/thumbnails", StaticFiles(directory=THUMB_DIR), name="thumbnails")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

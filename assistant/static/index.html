@@ -34,6 +34,10 @@
   }
   .msg.ai   { color: #eaf4ff; border-left: 3px solid #4da3ff; }
   .msg.user { color: #ffe9a8; border-left: 3px solid #ffc44d; }
+  .thumbs { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .5rem; }
+  .thumbs figure { margin: 0; text-align: center; }
+  .thumbs img { height: 72px; border-radius: 8px; border: 2px solid rgba(255,255,255,.4); display: block; }
+  .thumbs figcaption { font-size: .65rem; color: #cfe0f0; margin-top: 2px; }
 
   /* Middle-right buttons */
   #buttons {
@@ -119,10 +123,26 @@ function setStatus(t) {
   statusEl.style.display = t ? 'block' : 'none';
 }
 
-function addMsg(text, who) {
+function addMsg(text, who, matches) {
   const div = document.createElement('div');
   div.className = 'msg ' + who;
   div.textContent = text;
+  if (matches && matches.length) {
+    const row = document.createElement('div');
+    row.className = 'thumbs';
+    for (const m of matches) {
+      if (!m.thumbnail) continue;
+      const fig = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = m.thumbnail;
+      img.alt = m.class_name;
+      const cap = document.createElement('figcaption');
+      cap.textContent = `${m.class_name} · ${m.zone || '?'} · fr ${m.last_frame}`;
+      fig.appendChild(img); fig.appendChild(cap);
+      row.appendChild(fig);
+    }
+    div.appendChild(row);
+  }
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -233,7 +253,7 @@ async function sendVoice() {
     if (data.error) throw new Error(data.error);
 
     if (data.question) addMsg(data.question, 'user');
-    addMsg(data.text, 'ai');
+    addMsg(data.text, 'ai', data.matches);
     setStatus(data.tts_error ? 'Voice unavailable' : '');
 
     if (data.audio_b64) {
