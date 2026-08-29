@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Project Jericho website concept and story direction">
+  <title>Project Jericho — Website Concept</title>
+  <style>
+    :root {
+      --ink: #17211f;
+      --muted: #61716d;
+      --paper: #f5f6f1;
+      --card: #ffffff;
+      --line: #dce3df;
+      --teal: #0d756c;
+      --teal-soft: #dcefeb;
+      --amber: #b76d32;
+      --amber-soft: #f8e9d8;
+      --shadow: 0 18px 50px rgba(35, 57, 53, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--teal); }
+    a:hover { color: var(--amber); }
+    .shell { display: grid; grid-template-columns: 250px minmax(0, 900px); gap: 56px; max-width: 1280px; margin: 0 auto; padding: 42px 34px 80px; }
+    .sidebar { position: sticky; top: 28px; align-self: start; }
+    .brand { margin-bottom: 32px; }
+    .brand-mark { display: inline-flex; align-items: center; gap: 9px; color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .brand-mark::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 6px var(--amber-soft); }
+    .brand h1 { margin: 16px 0 8px; font-size: 28px; line-height: 1.08; letter-spacing: -.04em; }
+    .brand p { margin: 0; color: var(--muted); font-size: 14px; }
+    .toc { display: grid; gap: 4px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .toc a { padding: 5px 0; color: var(--muted); font-size: 13px; text-decoration: none; }
+    .toc a:hover { color: var(--teal); }
+    main { min-width: 0; }
+    .hero { padding: 56px 0 46px; }
+    .eyebrow { margin: 0 0 15px; color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .hero h2 { max-width: 800px; margin: 0; font-size: clamp(42px, 7vw, 78px); line-height: .98; letter-spacing: -.065em; }
+    .hero .lead { max-width: 690px; margin: 28px 0 0; color: var(--muted); font-size: 21px; line-height: 1.45; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 28px; }
+    .pill { display: inline-block; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: rgba(255,255,255,.65); font-size: 12px; font-weight: 700; }
+    section { scroll-margin-top: 28px; margin-top: 22px; padding: 34px; border: 1px solid var(--line); border-radius: 24px; background: var(--card); box-shadow: var(--shadow); }
+    section h3 { margin: 0 0 20px; font-size: 30px; line-height: 1.12; letter-spacing: -.04em; }
+    section h4 { margin: 28px 0 8px; color: var(--teal); font-size: 17px; line-height: 1.3; }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 10px 0 18px; padding-left: 22px; }
+    li + li { margin-top: 6px; }
+    blockquote { margin: 24px 0; padding: 20px 22px; border-left: 4px solid var(--amber); border-radius: 0 14px 14px 0; color: #41524d; background: var(--amber-soft); font-size: 20px; line-height: 1.4; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+    .mini-card { padding: 19px; border: 1px solid var(--line); border-radius: 16px; background: #fbfcfa; }
+    .mini-card h4 { margin: 0 0 8px; color: var(--ink); font-size: 17px; }
+    .mini-card p:last-child, .mini-card ul:last-child { margin-bottom: 0; }
+    .chapter { position: relative; padding-top: 66px; }
+    .chapter-number { position: absolute; top: 28px; right: 30px; color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .15em; }
+    .chapter h3 { max-width: 650px; }
+    .chapter .purpose { color: var(--muted); }
+    .sequence { display: grid; gap: 10px; margin-top: 22px; }
+    .sequence-step { display: grid; grid-template-columns: 38px 1fr; gap: 13px; padding: 15px; border-radius: 14px; background: #f7faf7; }
+    .sequence-step b { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: white; background: var(--teal); font-size: 13px; }
+    .sequence-step strong { display: block; margin-bottom: 3px; }
+    .sequence-step span { color: var(--muted); font-size: 14px; }
+    .note { padding: 16px 18px; border-radius: 14px; color: #35645e; background: var(--teal-soft); }
+    .note strong { color: var(--teal); }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { position: relative; padding-left: 27px; }
+    .checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--teal); font-weight: 800; }
+    .warning { border-left: 4px solid var(--amber); padding: 15px 18px; border-radius: 0 12px 12px 0; background: #fff8ef; }
+    details { margin-top: 12px; border-top: 1px solid var(--line); }
+    summary { cursor: pointer; padding: 15px 0 5px; color: var(--teal); font-weight: 800; }
+    footer { margin-top: 30px; color: var(--muted); font-size: 13px; text-align: center; }
+    @media (max-width: 850px) {
+      .shell { display: block; padding: 24px 16px 56px; }
+      .sidebar { position: static; }
+      .toc { display: flex; flex-wrap: wrap; gap: 4px 15px; margin-bottom: 10px; }
+      .toc a { padding: 2px 0; }
+      .hero { padding: 36px 0 28px; }
+      section { padding: 25px 22px; border-radius: 18px; }
+      .chapter { padding-top: 56px; }
+      .chapter-number { top: 23px; right: 22px; }
+    }
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero .lead { font-size: 18px; }
+      section h3 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">Project Jericho</div>
+        <h1>Website concept</h1>
+        <p>Story direction for an Age Well business showcase.</p>
+      </div>
+      <nav class="toc" aria-label="Document sections">
+        <a href="#context">Context</a>
+        <a href="#audience">Audience</a>
+        <a href="#positioning">Positioning</a>
+        <a href="#inspiration">Inspiration</a>
+        <a href="#narrative">Scroll narrative</a>
+        <a href="#capabilities">Capabilities</a>
+        <a href="#visuals">Visual direction</a>
+        <a href="#assets">Asset strategy</a>
+        <a href="#business">Business sections</a>
+        <a href="#boundaries">Boundaries</a>
+        <a href="#decisions">Open decisions</a>
+      </nav>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <p class="eyebrow">Age Well · Product story · Business showcase</p>
+        <h2>More confidence for the wearer. More reassurance for the people who care.</h2>
+        <p class="lead">Project Jericho is an AI cognitive and sensory companion designed specifically for older adults. This document defines how the website can communicate its purpose, current prototype, and future potential to older adults, families, caretakers, judges, partners, and care organizations.</p>
+        <div class="hero-meta">
+          <span class="pill">Human-first</span>
+          <span class="pill">Caretaker-aware</span>
+          <span class="pill">Prototype-led</span>
+          <span class="pill">Trustworthy by design</span>
+        </div>
+      </header>
+
+      <section id="context">
+        <p class="eyebrow">01 · Context</p>
+        <h3>A business-facing product showcase</h3>
+        <p>The website is being developed in the context of the hackathon theme <strong>Age Well</strong>. It should communicate the product's purpose, demonstrate the current prototype, build trust, and make the opportunity understandable.</p>
+        <blockquote>Jericho helps older adults stay more independent and connected, while giving the people who care about them more reassurance.</blockquote>
+        <p>This is not primarily a technical documentation page and not a direct-to-consumer ecommerce page yet. It is an emotional, credible, business-oriented introduction to the product and its potential.</p>
+      </section>
+
+      <section id="audience">
+        <p class="eyebrow">02 · Audience</p>
+        <h3>One product, two human perspectives</h3>
+        <div class="grid">
+          <div class="mini-card">
+            <h4>Older adults</h4>
+            <ul class="checklist">
+              <li>Simple and familiar to use.</li>
+              <li>Respectful and non-patronizing.</li>
+              <li>Helpful during ordinary moments at home.</li>
+              <li>Designed to support independence, not replace it.</li>
+            </ul>
+          </div>
+          <div class="mini-card">
+            <h4>Families and caretakers</h4>
+            <ul class="checklist">
+              <li>Understand what Jericho can help with today.</li>
+              <li>See how it reduces everyday friction and cognitive load.</li>
+              <li>Understand its potential for safer medication and object routines.</li>
+              <li>Feel reassured without feeling that care has become surveillance.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="mini-card">
+          <h4>Judges, partners, and care organizations</h4>
+          <p>They should see a clear social problem, a technically credible solution, working functionality, a realistic path from prototype to product, and awareness of safety, consent, privacy, and accessibility.</p>
+        </div>
+        <p class="note"><strong>Important:</strong> The older adult should be portrayed as active, capable, and socially connected—with extra support available when needed.</p>
+      </section>
+
+      <section id="positioning">
+        <p class="eyebrow">03 · Positioning</p>
+        <h3>Support independence. Reassure care.</h3>
+        <p>Jericho is not about adding more technology to an older person's life. It is about making everyday technology feel less visible while helping the person stay connected to the world around them.</p>
+        <div class="grid">
+          <div class="mini-card"><h4>Language directions</h4><ul><li>“A little more confidence, every day.”</li><li>“Stay connected to the moment.”</li><li>“Support for independence. Reassurance for care.”</li><li>“Technology that helps people stay themselves.”</li></ul></div>
+          <div class="mini-card"><h4>Tone</h4><p>Warm, clear, calm, and dignified. Avoid language that implies the wearer is incapable or that Jericho replaces family, professional caregivers, or medical professionals.</p></div>
+        </div>
+      </section>
+
+      <section id="inspiration">
+        <p class="eyebrow">04 · Inspiration</p>
+        <h3>Borrow the rhythm, make the story ours</h3>
+        <p>Our current visual and storytelling inspiration is <a href="https://www.evenrealities.com/" target="_blank" rel="noreferrer">Even Realities</a>.</p>
+        <div class="grid">
+          <div class="mini-card"><h4>What is compelling</h4><ul><li>Feeling and lifestyle before specification sheets.</li><li>Large cinematic visual moments.</li><li>Features shown as real situations.</li><li>Technology framed as quiet and naturally integrated.</li><li>Clear chapters for promise, use cases, proof, and technology.</li></ul></div>
+          <div class="mini-card"><h4>What Jericho should make distinct</h4><ul><li>The story is about aging well, not performance.</li><li>The main character is an older adult and their support network.</li><li>Caretakers and family members are a core audience.</li><li>The emotional outcome is dignity, connection, confidence, and independence.</li></ul></div>
+        </div>
+        <p class="warning">Use the reference site's storytelling principles without copying its wording, layouts, visual identity, or claims.</p>
+      </section>
+
+      <section id="narrative">
+        <p class="eyebrow">05 · Scroll narrative</p>
+        <h3>Product → inside the product → everyday life → proof → reassurance</h3>
+        <p class="purpose">The page should feel like one continuous story, moving from “what is it?” to “how does it work?” to “who does it help?”</p>
+
+        <div class="sequence">
+          <div class="sequence-step"><b>0</b><div><strong>Opening promise</strong><span>Establish the human reason for the product before introducing features. Possible direction: “Staying independent should feel natural.”</span></div></div>
+          <div class="sequence-step"><b>1</b><div><strong>The glasses by themselves</strong><span>White or warm off-white background. Glasses centered like familiar everyday eyewear. Very little text and slow movement.</span></div></div>
+          <div class="sequence-step"><b>2</b><div><strong>The product opens</strong><span>The glasses rotate, separate, and reveal only the important internal components: vision, voice, memory, processing, and power.</span></div></div>
+          <div class="sequence-step"><b>3</b><div><strong>The glasses reassemble</strong><span>The animation reverses. Parts move back into place, labels fade away, and the product becomes visually simple again.</span></div></div>
+          <div class="sequence-step"><b>4</b><div><strong>From product to person</strong><span>The glasses move toward an older adult's face. The clean product space becomes a warm home. Help is available without taking control away.</span></div></div>
+          <div class="sequence-step"><b>5</b><div><strong>Real functionality</strong><span>Current videos become evidence of the product's abilities, organized around simple human questions rather than shown as a detached gallery.</span></div></div>
+          <div class="sequence-step"><b>6</b><div><strong>The two-sided value</strong><span>Show the benefit for the wearer and the reassurance for the caretaker side by side.</span></div></div>
+          <div class="sequence-step"><b>7</b><div><strong>Closing invitation</strong><span>End with a calm product shot and an invitation to learn, see the demonstration, partner, or help build the future of aging well.</span></div></div>
+        </div>
+
+        <h4>Human scene direction</h4>
+        <p>An AI presence can appear subtly as a soft light, calm interface layer, conversational orb, or visual thread connecting the wearer to useful information.</p>
+        <p>The support network should not suddenly appear from dark shadows, since that may feel ominous. Reveal family members or caretakers as people already present in the home environment, gradually becoming visible as the story expands.</p>
+        <blockquote>The wearer remains in control. Help is available when needed. Care can feel connected even when people are not in the same room.</blockquote>
+
+        <h4>Functionality video framing</h4>
+        <div class="grid">
+          <div class="mini-card"><h4>See it</h4><p>Can Jericho identify what is in front of me?</p></div>
+          <div class="mini-card"><h4>Find it</h4><p>Can Jericho help me remember where something was?</p></div>
+          <div class="mini-card"><h4>Read it</h4><p>Can Jericho read a label, letter, or small print aloud?</p></div>
+          <div class="mini-card"><h4>Ask it</h4><p>Can I speak naturally and receive help?</p></div>
+        </div>
+        <p class="note"><strong>Be explicit:</strong> Separate current prototype demonstrations from future product features and anything that would require additional caregiver infrastructure.</p>
+      </section>
+
+      <section id="capabilities">
+        <p class="eyebrow">06 · Current prototype</p>
+        <h3>Explain the human benefit before the technical system</h3>
+        <ul class="checklist">
+          <li>Camera-based identification of everyday objects and medicines.</li>
+          <li>Voice interaction and conversation.</li>
+          <li>Live room memory for finding where objects were last seen.</li>
+          <li>Medication-related memory and safety reminders.</li>
+          <li>Reading letters, labels, bills, and small print aloud.</li>
+          <li>Object tracking and re-identification powered by the REMIND system.</li>
+        </ul>
+        <p>Use plain language on the main page. Technical terms such as REMIND, object re-identification, visual memory, and DINO features can appear later in a “How it works” or “Technology” section for judges and partners.</p>
+      </section>
+
+      <section id="visuals">
+        <p class="eyebrow">07 · Visual direction</p>
+        <h3>Premium but warm, calm rather than flashy</h3>
+        <div class="grid">
+          <div class="mini-card"><h4>Overall feel</h4><ul><li>Human rather than clinical.</li><li>Spacious rather than dense.</li><li>Trustworthy without feeling like a hospital or insurance website.</li><li>Cinematic, but grounded in ordinary life.</li></ul></div>
+          <div class="mini-card"><h4>Color progression</h4><ol><li>Warm white and soft grey for the product reveal.</li><li>Charcoal, graphite, and restrained electric blue for internals.</li><li>Warm cream, amber, and muted green for home and human scenes.</li><li>Darker media panels for functionality.</li><li>Warm white again for the closing message.</li></ol></div>
+        </div>
+        <h4>Motion principles</h4>
+        <ul><li>Slow and deliberate product motion.</li><li>One major visual idea per scroll chapter.</li><li>Text appears when the visual has earned it.</li><li>The story still works if motion is reduced or disabled.</li><li>The caretaker should never feel like a surveillance operator.</li></ul>
+      </section>
+
+      <section id="assets">
+        <p class="eyebrow">08 · Asset strategy</p>
+        <h3>Prototype the story before investing in the final model</h3>
+        <div class="grid">
+          <div class="mini-card"><h4>First prototype: SVG / CSS</h4><ul><li>Fast to build and easy to change.</li><li>Lightweight and responsive.</li><li>Supports rotation, separation, glow, labels, and scroll-driven transitions.</li><li>Useful while product details are still evolving.</li></ul></div>
+          <div class="mini-card"><h4>Later: Blender product animation</h4><ol><li>Model the glasses once the design is known.</li><li>Animate opening, explosion, and reassembly.</li><li>Render with transparent or controlled backgrounds.</li><li>Use a scroll-controlled image sequence or optimized video.</li></ol></div>
+        </div>
+        <p>The SVG prototype should use the same scene structure as the future Blender animation, so the asset can be replaced later without redesigning the page.</p>
+      </section>
+
+      <section id="business">
+        <p class="eyebrow">09 · Business trust</p>
+        <h3>More than a cinematic hero</h3>
+        <p>Because this is a business-facing website, the experience should eventually include sections that make the project credible to families, care organizations, partners, and judges.</p>
+        <div class="grid">
+          <div class="mini-card"><h4>The problem</h4><p>Everyday cognitive and sensory challenges faced by older adults.</p></div>
+          <div class="mini-card"><h4>The solution</h4><p>Jericho as a companion that helps with seeing, remembering, reading, and asking.</p></div>
+          <div class="mini-card"><h4>How it works</h4><p>Simple system explanation, followed by optional technical depth.</p></div>
+          <div class="mini-card"><h4>Caregiver perspective</h4><p>Why this matters to families and care teams.</p></div>
+          <div class="mini-card"><h4>Prototype evidence</h4><p>Current videos and measurable demonstrations.</p></div>
+          <div class="mini-card"><h4>Privacy and consent</h4><p>What the system sees, stores, and shares—and what remains under the user's control.</p></div>
+          <div class="mini-card"><h4>Safety boundaries</h4><p>The product supports daily life but does not replace medical professionals or human caregivers.</p></div>
+          <div class="mini-card"><h4>Roadmap and partnership</h4><p>Future care collaboration, richer home memory, and a clear path for organizations and collaborators.</p></div>
+        </div>
+        <p class="note"><strong>Trust matters:</strong> Privacy and consent should be explained proactively, especially for an elderly-focused product.</p>
+      </section>
+
+      <section id="boundaries">
+        <p class="eyebrow">10 · Boundaries</p>
+        <h3>Supportive independence, not fear-based care</h3>
+        <p>The website should not:</p>
+        <ul class="checklist">
+          <li>Suggest that Jericho diagnoses medical conditions.</li>
+          <li>Imply that the product can guarantee safety.</li>
+          <li>Suggest that it replaces caregivers or family relationships.</li>
+          <li>Present future features as currently available.</li>
+          <li>Use fear-based imagery about aging.</li>
+          <li>Frame older adults as passive recipients of care.</li>
+          <li>Imply that continuous monitoring is required for the product to be useful.</li>
+        </ul>
+        <p>The strongest business position is supportive independence: Jericho helps the wearer do more while helping their support network feel more connected.</p>
+      </section>
+
+      <section id="decisions">
+        <p class="eyebrow">11 · Open decisions</p>
+        <h3>Questions to settle before the final visual system</h3>
+        <details open>
+          <summary>Product and brand</summary>
+          <ul><li>Final product name: Jericho, REMIND Glasses, or another name.</li><li>Physical appearance of the glasses.</li><li>Whether the product includes a visible display, camera, speakers, or other components.</li></ul>
+        </details>
+        <details>
+          <summary>Experience and claims</summary>
+          <ul><li>Which caregiver features are available now versus planned.</li><li>Which existing videos are strongest for the public-facing story.</li><li>Privacy and consent model.</li><li>Primary call to action for the hackathon presentation.</li></ul>
+        </details>
+        <details>
+          <summary>Future website</summary>
+          <ul><li>Whether the visual style should be realistic, illustrated, or a blend.</li><li>Whether the site remains a single scrolling presentation or becomes a broader product website.</li></ul>
+        </details>
+      </section>
+
+      <section>
+        <p class="eyebrow">12 · Recommended next step</p>
+        <h3>Storyboard first. Model second.</h3>
+        <ol>
+          <li>Create a low-fidelity page with the seven narrative chapters.</li>
+          <li>Use placeholder blocks for the glasses, human scene, and videos.</li>
+          <li>Write one sentence of copy per chapter.</li>
+          <li>Review the distinction between wearer value and caretaker value.</li>
+          <li>Only then invest in Blender modeling or detailed visual assets.</li>
+        </ol>
+        <p class="note"><strong>Working principle:</strong> Validate the story first. Once the narrative and product claims are stable, upgrade the SVG prototype to a Blender-rendered product animation.</p>
+      </section>
+
+      <footer>Project Jericho · Website concept document · Prepared for team discussion</footer>
+    </main>
+  </div>
+</body>
+</html>
