@@ -1,0 +1,5 @@
+{
+  "ignore": ["scripts/**"],
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none"
+}

@@ -6,8 +6,8 @@
   <meta name="description" content="Project Jericho is an AI cognitive and sensory companion designed to help older adults stay independent and connected.">
   <meta name="theme-color" content="#f3f0e8">
   <title>Project Jericho — Age well, with confidence</title>
-  <link rel="stylesheet" href="website/styles.css">
-  <script src="website/site.js" defer></script>
+  <link rel="stylesheet" href="website/styles.css?v=32">
+  <script src="website/site.js?v=35" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -64,89 +64,27 @@
     </section>
 
     <section class="story" id="story">
-      <div class="story-heading section-pad">
+      <div class="story-sticky-header">
         <p class="section-index">02 / Inside Jericho</p>
-        <h2 class="reveal">Quiet technology.<br><em>Useful when it matters.</em></h2>
+        <h2>Engineered to disappear into daily life.</h2>
       </div>
 
       <div class="story-layout">
         <div class="story-stage-wrap">
           <div class="story-stage state-0" data-story-stage>
             <div class="stage-kicker"><span data-stage-number>01</span> <span data-stage-label>Familiar by design</span></div>
-            <div class="story-media" aria-label="Jericho smart glasses product render">
-              <img class="story-image story-image-current" src="website/assets/current-jericho-glasses.jpg" alt="Jericho smart glasses on a clean white studio background">
-              <img class="story-image story-image-breakdown" src="website/assets/breakdown-jericho-glasses.jpg" alt="Exploded view of Jericho smart glasses showing internal components">
+            
+            <div class="story-viewport" aria-label="Jericho smart glasses interactive 3D breakdown and assembly">
+              <div class="render3d-container">
+                <div class="canvas-stage-wrap">
+                  <canvas id="glasses-3d-canvas" width="960" height="640" aria-label="3D model render of Jericho smart glasses"></canvas>
+                  <!-- Corner Camera Indicator Light: Green on white background, Red when background turns green -->
+                  <div class="corner-camera-light" aria-hidden="true"></div>
+                </div>
+              </div>
+              <!-- Unified Assembly Glow -->
+              <div class="straight-glow" aria-hidden="true"></div>
             </div>
-            <svg class="story-svg story-person-svg" viewBox="0 0 900 650" role="img" aria-labelledby="story-svg-title">
-              <title id="story-svg-title">Animated view of the Jericho glasses and their components</title>
-              <defs>
-                <linearGradient id="story-lens" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#d8eee8" stop-opacity=".85"/>
-                  <stop offset=".55" stop-color="#fff" stop-opacity=".18"/>
-                  <stop offset="1" stop-color="#8ab9ae" stop-opacity=".45"/>
-                </linearGradient>
-                <radialGradient id="ai-glow">
-                  <stop offset="0" stop-color="#89ead3" stop-opacity=".65"/>
-                  <stop offset="1" stop-color="#89ead3" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-
-              <g class="support-layer">
-                <circle cx="168" cy="344" r="78" fill="#d9c7af"/>
-                <path d="M61 625 C65 493 103 431 168 431 C233 431 271 493 275 625 Z" fill="#6f817b"/>
-                <circle cx="732" cy="344" r="78" fill="#d9c7af"/>
-                <path d="M625 625 C629 493 667 431 732 431 C797 431 835 493 839 625 Z" fill="#8c7668"/>
-              </g>
-
-              <g class="person-layer">
-                <circle class="ai-halo" cx="687" cy="267" r="105" fill="url(#ai-glow)"/>
-                <circle cx="687" cy="267" r="24" fill="#0b756b"/>
-                <path d="M676 267 H698 M687 256 V278" stroke="#e7fffa" stroke-width="3" stroke-linecap="round"/>
-                <path d="M313 650 C318 510 355 453 450 448 C545 453 582 510 587 650 Z" fill="#be7440"/>
-                <ellipse cx="450" cy="328" rx="116" ry="144" fill="#d7ac8f"/>
-                <path d="M340 319 C323 211 365 157 443 154 C525 154 576 220 558 321 C531 265 487 239 431 241 C388 243 359 268 340 319 Z" fill="#e5e1d7"/>
-                <path d="M347 270 C371 199 428 181 479 193 C520 202 544 230 557 274" fill="none" stroke="#f2efe7" stroke-width="23" stroke-linecap="round"/>
-                <path d="M420 370 C440 382 460 382 480 370" fill="none" stroke="#9b6658" stroke-width="5" stroke-linecap="round"/>
-                <circle cx="410" cy="324" r="5" fill="#2f302d"/>
-                <circle cx="490" cy="324" r="5" fill="#2f302d"/>
-              </g>
-
-              <ellipse class="product-shadow" cx="450" cy="470" rx="260" ry="29" fill="#07110f" opacity=".12"/>
-              <g class="product-rig">
-                <g class="lens-frame">
-                  <path d="M151 282 C145 250 165 226 199 223 L354 219 C389 218 411 240 414 271 L416 311 C418 345 397 366 363 369 L216 372 C179 373 158 354 155 322 Z" fill="url(#story-lens)" stroke="#182320" stroke-width="15"/>
-                  <path d="M486 271 C489 240 511 218 546 219 L701 223 C735 226 755 250 749 282 L745 322 C742 354 721 373 684 372 L537 369 C503 366 482 345 484 311 Z" fill="url(#story-lens)" stroke="#182320" stroke-width="15"/>
-                  <path d="M414 273 C437 256 463 256 486 273" fill="none" stroke="#182320" stroke-width="15" stroke-linecap="round"/>
-                  <path d="M156 252 L78 223 C63 217 53 228 61 240 L151 304" fill="none" stroke="#182320" stroke-width="16" stroke-linecap="round"/>
-                  <path d="M744 252 L822 223 C837 217 847 228 839 240 L749 304" fill="none" stroke="#182320" stroke-width="16" stroke-linecap="round"/>
-                </g>
-
-                <g class="component component-camera">
-                  <rect x="704" y="241" width="48" height="38" rx="9" fill="#c8763c" stroke="#182320" stroke-width="6"/>
-                  <circle cx="728" cy="260" r="9" fill="#07110f"/>
-                  <circle cx="728" cy="260" r="3" fill="#8de8d3"/>
-                </g>
-                <g class="component component-chip">
-                  <rect x="425" y="285" width="50" height="50" rx="9" fill="#0b756b"/>
-                  <path d="M437 298 H463 M437 310 H463 M437 322 H455" stroke="#baf3e6" stroke-width="4" stroke-linecap="round"/>
-                </g>
-                <g class="component component-battery">
-                  <rect x="118" y="300" width="56" height="29" rx="8" fill="#d9a45e" stroke="#182320" stroke-width="5"/>
-                  <path d="M174 310 H181 V320 H174" fill="#182320"/>
-                </g>
-                <g class="component component-audio">
-                  <circle cx="784" cy="319" r="15" fill="#dcebe7" stroke="#182320" stroke-width="5"/>
-                  <path d="M780 313 C788 316 788 322 780 325" fill="none" stroke="#0b756b" stroke-width="3" stroke-linecap="round"/>
-                </g>
-              </g>
-
-              <g class="part-labels" fill="#f4f3ed" font-family="system-ui, sans-serif" font-size="14" font-weight="700">
-                <g class="label-camera"><path d="M744 190 L762 145 H818" fill="none" stroke="#84c9b9" stroke-width="2"/><text x="765" y="134">VISION</text><text x="765" y="153" fill="#8ea19c" font-size="11" font-weight="500">Understands the scene</text></g>
-                <g class="label-chip"><path d="M450 353 V415" fill="none" stroke="#84c9b9" stroke-width="2"/><text x="416" y="440">MEMORY</text><text x="387" y="458" fill="#8ea19c" font-size="11" font-weight="500">Keeps useful context</text></g>
-                <g class="label-battery"><path d="M145 282 L123 184 H68" fill="none" stroke="#84c9b9" stroke-width="2"/><text x="68" y="154">POWER</text><text x="68" y="173" fill="#8ea19c" font-size="11" font-weight="500">Built for everyday use</text></g>
-                <g class="label-audio"><path d="M802 335 L829 387" fill="none" stroke="#84c9b9" stroke-width="2"/><text x="757" y="414">VOICE</text><text x="710" y="433" fill="#8ea19c" font-size="11" font-weight="500">Help without a screen</text></g>
-              </g>
-            </svg>
             <div class="stage-progress" aria-hidden="true"><span data-stage-progress></span></div>
           </div>
         </div>
@@ -337,3 +275,5 @@
   <noscript><p class="noscript">JavaScript is disabled. The full page remains readable, but scroll transitions will be static.</p></noscript>
 </body>
 </html>
+
+
