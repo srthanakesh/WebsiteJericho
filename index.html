@@ -6,8 +6,8 @@
   <meta name="description" content="Project Jericho is an AI cognitive and sensory companion designed to help older adults stay independent and connected.">
   <meta name="theme-color" content="#f3f0e8">
   <title>Project Jericho — Age well, with confidence</title>
-  <link rel="stylesheet" href="website/styles.css?v=32">
-  <script src="website/site.js?v=35" defer></script>
+  <link rel="stylesheet" href="website/styles.css?v=39">
+  <script src="website/site.js?v=38" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -18,10 +18,6 @@
       <span class="wordmark-mark" aria-hidden="true">J</span>
       <span>Jericho</span>
     </a>
-    <button class="menu-button" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-button>
-      <span>Menu</span>
-      <i aria-hidden="true"></i>
-    </button>
     <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation" data-nav>
       <a href="#story">How it works</a>
       <a href="#prototype">Prototype</a>
@@ -30,6 +26,17 @@
       <a class="nav-cta" href="#contact">Partner with us</a>
     </nav>
   </header>
+
+  <nav class="quick-nav-bar" data-quick-nav aria-label="Quick section navigation">
+    <div class="quick-nav-track">
+      <a href="#story" class="quick-pill is-active" data-section="story">How it works</a>
+      <a href="#prototype" class="quick-pill" data-section="prototype">Prototype</a>
+      <a href="#capabilities" class="quick-pill" data-section="capabilities">Capabilities</a>
+      <a href="#care" class="quick-pill" data-section="care">For families</a>
+      <a href="#trust" class="quick-pill" data-section="trust">Trust</a>
+      <a href="#contact" class="quick-pill" data-section="contact">Partner</a>
+    </div>
+  </nav>
 
   <main id="main-content">
     <section class="hero" id="top">
@@ -64,7 +71,7 @@
     </section>
 
     <section class="story" id="story">
-      <div class="story-sticky-header">
+      <div class="story-heading story-sticky-header">
         <p class="section-index">02 / Inside Jericho</p>
         <h2>Engineered to disappear into daily life.</h2>
       </div>

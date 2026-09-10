@@ -79,6 +79,7 @@ function chrome() {
   header?.classList.toggle('is-scrolled', y > 24);
   const max = document.documentElement.scrollHeight - window.innerHeight;
   if (pgBar) pgBar.style.transform = `scaleX(${max > 0 ? clamp(y / max, 0, 1) : 0})`;
+  updateQuickNav();
 }
 
 // ── Mobile Menu ───────────────────────────────────────────────────────────────
@@ -93,6 +94,52 @@ nav?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
   nav.classList.remove('is-open');
   document.body.classList.remove('menu-open');
 }));
+
+// ── Quick Section Navigation ──────────────────────────────────────────────────
+const quickNav = document.querySelector('[data-quick-nav]');
+const quickPills = quickNav ? [...quickNav.querySelectorAll('.quick-pill')] : [];
+const quickSections = quickPills.map(p => {
+  const id = p.getAttribute('href');
+  return id ? document.querySelector(id) : null;
+}).filter(Boolean);
+
+function updateQuickNav() {
+  if (!quickPills.length || !quickSections.length) return;
+  const headerH = header ? header.offsetHeight : 68;
+  const quickH = quickNav ? quickNav.offsetHeight : 42;
+  const scrollPos = window.scrollY + headerH + quickH + 60;
+
+  let activeIdx = 0;
+  for (let i = 0; i < quickSections.length; i++) {
+    if (quickSections[i].offsetTop <= scrollPos) {
+      activeIdx = i;
+    }
+  }
+
+  quickPills.forEach((p, idx) => {
+    const isAct = idx === activeIdx;
+    if (p.classList.contains('is-active') !== isAct) {
+      p.classList.toggle('is-active', isAct);
+      if (isAct) {
+        p.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  });
+}
+
+quickPills.forEach(p => {
+  p.addEventListener('click', e => {
+    const id = p.getAttribute('href');
+    const target = id ? document.querySelector(id) : null;
+    if (target) {
+      e.preventDefault();
+      const headerH = header ? header.offsetHeight : 68;
+      const quickH = quickNav ? quickNav.offsetHeight : 42;
+      const targetY = target.getBoundingClientRect().top + window.scrollY - headerH - quickH + 4;
+      window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+    }
+  });
+});
 
 // ── Reveal Observer ───────────────────────────────────────────────────────────
 const ro = new IntersectionObserver(es => es.forEach(e => {
@@ -147,7 +194,7 @@ const TOTAL_FRAMES = 72;
 const frames = [];
 let framesLoaded = 0;
 const glassesCanvas = document.getElementById('glasses-3d-canvas');
-const ctx = glassesCanvas ? glassesCanvas.getContext('2d') : null;
+const ctx = glassesCanvas ? glassesCanvas.getContext('2d', { alpha: true, desynchronized: true }) : null;
 
 for (let i = 1; i <= TOTAL_FRAMES; i++) {
   const img = new Image();
@@ -163,34 +210,19 @@ for (let i = 1; i <= TOTAL_FRAMES; i++) {
 
 function renderFrame(frameFloat) {
   if (!ctx || !glassesCanvas) return;
-  const f0 = Math.floor(frameFloat);
-  const f1 = Math.min(TOTAL_FRAMES - 1, f0 + 1);
-  const frac = frameFloat - f0;
+  const W = glassesCanvas.width;
+  const H = glassesCanvas.height;
 
-  ctx.clearRect(0, 0, glassesCanvas.width, glassesCanvas.height);
+  // Snap to nearest frame — no crossfade needed at 72-frame density.
+  // Crossfading semi-transparent PNGs (lens area has partial alpha) causes
+  // alpha compounding artifacts: lens opacity oscillates mid-transition.
+  // Spring physics + FRAME_LERP already provide visually smooth motion.
+  const idx = clamp(Math.round(frameFloat), 0, TOTAL_FRAMES - 1);
 
-  // Optical flow blending: continuous clean sub-frame transition
-  if (f0 === f1 || frac < 0.015) {
-    if (frames[f0] && frames[f0].complete) {
-      ctx.globalAlpha = 1.0;
-      ctx.drawImage(frames[f0], 0, 0, glassesCanvas.width, glassesCanvas.height);
-    }
-  } else if (frac > 0.985) {
-    if (frames[f1] && frames[f1].complete) {
-      ctx.globalAlpha = 1.0;
-      ctx.drawImage(frames[f1], 0, 0, glassesCanvas.width, glassesCanvas.height);
-    }
-  } else {
-    // Pure linear crossfade without opaque doubling
-    if (frames[f0] && frames[f0].complete) {
-      ctx.globalAlpha = 1.0 - frac;
-      ctx.drawImage(frames[f0], 0, 0, glassesCanvas.width, glassesCanvas.height);
-    }
-    if (frames[f1] && frames[f1].complete) {
-      ctx.globalAlpha = frac;
-      ctx.drawImage(frames[f1], 0, 0, glassesCanvas.width, glassesCanvas.height);
-    }
+  ctx.clearRect(0, 0, W, H);
+  if (frames[idx] && frames[idx].complete) {
     ctx.globalAlpha = 1.0;
+    ctx.drawImage(frames[idx], 0, 0, W, H);
   }
 }
 
@@ -255,10 +287,10 @@ function frame(now) {
   const isMobile = window.innerWidth <= 800;
   if (isMobile) {
     const stageH = storyStage ? storyStage.offsetHeight : 220;
-    const d = r.height - stageH;
+    const stickyTop = (header ? header.offsetHeight : 68) + (quickNav ? quickNav.offsetHeight : 42) + 6;
+    const d = r.height - stageH - 40;
     if (d > 0) {
-      const topOffset = 70;
-      tgtP = clamp((-r.top + topOffset) / d, 0, 1);
+      tgtP = clamp((-r.top + stickyTop) / d, 0, 1);
     }
   } else {
     const d = r.height - window.innerHeight;
@@ -291,7 +323,7 @@ function frame(now) {
 
   render(curP);
 
-  if (Math.abs(tgtP - curP) > 0.0001 || Math.abs(springVel) > 0.0001 || Math.abs(targetTiltX - curTiltX) > 0.02) {
+  if (Math.abs(tgtP - curP) > 0.00005 || Math.abs(springVel) > 0.00005 || Math.abs(targetTiltX - curTiltX) > 0.01) {
     requestAnimationFrame(frame);
   } else {
     ticking = false;
